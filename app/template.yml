@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  BilingualFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Runtime: python3.10
+      CodeUri: .
+      MemorySize: 128
+      Timeout: 10
+      Events:
+        IndexApi:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
