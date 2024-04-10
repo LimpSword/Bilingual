@@ -164,7 +164,7 @@
     <div class="w-full bg-gray-100 lg:w-1/2 flex items-center justify-center">
       <div class="max-w-md w-full p-6">
         <h1 class="text-3xl font-semibold mb-6 text-black text-center">Login</h1>
-        <h1 class="text-sm font-semibold mb-6 text-gray-500 text-center">Get back to learning!</h1>
+        <h1 class="text-sm font-semibold mb-6 text-gray-500 text-center">Let's get back to learning!</h1>
         <div class="mt-4 flex flex-col lg:flex-row items-center justify-between">
           <div class="w-full mb-2 lg:mb-0">
             <button type="button"
@@ -186,19 +186,27 @@
         <div class="mt-4 text-sm text-gray-600 text-center">
           <p>or with your email</p>
         </div>
-        <form action="#" method="POST" class="space-y-4">
+        <form class="space-y-4" @submit.prevent>
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
             <input type="text" id="email" name="email"
+                   required
+                   v-model="email"
                    class="mt-1 p-2 w-full border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300">
           </div>
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
             <input type="password" id="password" name="password"
+                   required
+                   v-model="password"
                    class="mt-1 p-2 w-full border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300">
           </div>
+          <!-- Error message -->
+          <div v-if="error" class="text-red-500 text-sm">
+            {{ error }}
+          </div>
           <div>
-            <button type="submit"
+            <button @click="login"
                     class="w-full bg-black text-white p-2 rounded-md hover:bg-gray-800 focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300">
               Login
             </button>
@@ -212,5 +220,51 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
+<script>
+import axios from "axios";
+
+export default {
+  name: 'LoginView',
+  data() {
+    return {
+      email: '',
+      password: '',
+      error: ''
+    }
+  },
+  methods: {
+    login() {
+      if (!this.email || !this.password) {
+        return
+      }
+
+      if (!this.email.includes('@')) {
+        this.error = 'Invalid email address'
+        return
+      }
+
+      let apiUrl = import.meta.env.VITE_API_URL
+      console.log(apiUrl)
+      // use axios to send a POST request to the login endpoint
+      axios.post(`${apiUrl}/login`, {
+        email: this.email,
+        password: this.password
+      }).then(response => {
+        // store the token in local storage
+        localStorage.setItem('token', response.data.token)
+        // redirect to the dashboard
+        this.$router.push('/profile')
+      }).catch(error => {
+        switch (error.code) {
+          case "ERR_NETWORK":
+            this.error = "Network error. Please try again later."
+            break
+          default:
+            this.error = "Invalid email or password. Please try again."
+        }
+        console.error(error)
+      })
+    }
+  }
+}
 </script>
