@@ -1,20 +1,20 @@
 import os
 import json
 import boto3
-from urllib.parse import parse_qs
 
-dynamodb = boto3.resource('dynamodb')
+
+dynamodb = boto3.resource('dynamodb', endpoint_url='http://172.17.0.1:8000')
 table = dynamodb.Table(os.environ['USERS_TABLE_NAME'])
 
 
 def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
-        body = parse_qs(event['body'])
-        username = body['username'][0]
-        password = body['password'][0]
+        body = json.loads(event['body'])
+        email = body['email']
+        password = body['password']
 
         try:
-            response = table.get_item(Key={'username': username})
+            response = table.get_item(Key={'email': email})
             item = response.get('Item')
             if item and item['password'] == password:
                 return {

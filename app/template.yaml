@@ -11,21 +11,21 @@ Resources:
         openapi: '3.0'
         info: {}
         paths:
-          /login:
+          /api/login:
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostLogin.Arn}/invocations
               responses: {}
-          /register:
+          /api/register:
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostRegister.Arn}/invocations
               responses: {}
-          /leaderboard:
+          /api/leaderboard:
             get:
               x-amazon-apigateway-integration:
                 httpMethod: POST
@@ -36,17 +36,20 @@ Resources:
       TracingEnabled: true
       Cors:
         MaxAge: 5
+        AllowOrigin: '''*'''
+        AllowMethods: '''POST,OPTIONS'''
+        AllowHeaders: '''Content-Type'''
   Users:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: username
+        - AttributeName: email
           AttributeType: S
         - AttributeName: password
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: username
+        - AttributeName: email
           KeyType: HASH
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
@@ -66,7 +69,7 @@ Resources:
         ApiPOSTlogin:
           Type: Api
           Properties:
-            Path: /login
+            Path: /api/login
             Method: POST
             RestApiId: !Ref Api
       Environment:
@@ -97,7 +100,7 @@ Resources:
         ApiPOSTregister:
           Type: Api
           Properties:
-            Path: /register
+            Path: /api/register
             Method: POST
             RestApiId: !Ref Api
       Environment:
@@ -128,7 +131,7 @@ Resources:
         ApiGETleaderboard:
           Type: Api
           Properties:
-            Path: /leaderboard
+            Path: /api/leaderboard
             Method: GET
             RestApiId: !Ref Api
       Environment:
