@@ -9,9 +9,9 @@ table = dynamodb.Table(os.environ['USERS_TABLE_NAME'])
 def lambda_handler(event, context):
     if event['httpMethod'] == 'POST':
         body = json.loads(event['body'])
-        username = body['username'][0]
-        email = body['email'][0]
-        password = body['password'][0]
+        username = body['username']
+        email = body['email']
+        password = body['password']
 
         # Insert into DynamoDB
         try:
