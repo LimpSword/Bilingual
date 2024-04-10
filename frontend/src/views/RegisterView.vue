@@ -160,8 +160,8 @@
     <!-- Right Pane -->
     <div class="w-full bg-gray-100 lg:w-1/2 flex items-center justify-center">
       <div class="max-w-md w-full p-6">
-        <h1 class="text-3xl font-semibold mb-6 text-black text-center">Login</h1>
-        <h1 class="text-sm font-semibold mb-6 text-gray-500 text-center">Get back to learning!</h1>
+        <h1 class="text-3xl font-semibold mb-6 text-black text-center">Register</h1>
+        <h1 class="text-sm font-semibold mb-6 text-gray-500 text-center">A new learning journey awaits you!</h1>
         <div class="mt-4 flex flex-col lg:flex-row items-center justify-between">
           <div class="w-full mb-2 lg:mb-0">
             <button type="button"
@@ -176,7 +176,7 @@
                 <path fill="#f14336"
                       d="m419.404 58.936-82.933 67.896C313.136 112.246 285.552 103.82 256 103.82c-66.729 0-123.429 42.957-143.965 102.724l-83.397-68.276h-.014C71.23 56.123 157.06 0 256 0c62.115 0 119.068 22.126 163.404 58.936z"></path>
               </svg>
-              Login with Google
+              Register with Google
             </button>
           </div>
         </div>
@@ -184,6 +184,11 @@
           <p>or with your email</p>
         </div>
         <form action="#" method="POST" class="space-y-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">Username</label>
+            <input type="text" id="name" name="name"
+                   class="mt-1 p-2 w-full border rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300">
+          </div>
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
             <input type="text" id="email" name="email"
@@ -197,12 +202,12 @@
           <div>
             <button type="submit"
                     class="w-full bg-black text-white p-2 rounded-md hover:bg-gray-800 focus:outline-none focus:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300">
-              Login
+              Register
             </button>
           </div>
         </form>
         <div class="mt-4 text-sm text-gray-600 text-center">
-          <p>No account yet? <a href="/register" class="text-black hover:underline">Sign up here</a>
+          <p>Already have an account? <a href="/login" class="text-black hover:underline">Login here</a>
           </p>
         </div>
       </div>
