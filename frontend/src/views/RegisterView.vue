@@ -3,7 +3,8 @@
     <!-- Left Pane -->
     <div class="hidden lg:flex items-center justify-center flex-1 bg-white text-black">
       <div class="max-w-md text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="524.67004" height="531.39694" class="w-full"
+        <a href="/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="524.67004" height="531.39694" class="w-full"
              alt="https://undraw.co/illustrations" title="https://undraw.co/illustrations"
              viewBox="0 0 524.67004 531.39694" xmlns:xlink="http://www.w3.org/1999/xlink">
           <polygon
@@ -155,6 +156,7 @@
                 fill="#e6e6e6"/>
           </g>
         </svg>
+        </a>
       </div>
     </div>
     <!-- Right Pane -->
@@ -214,3 +216,5 @@
     </div>
   </div>
 </template>
+<script setup lang="ts">
+</script>
