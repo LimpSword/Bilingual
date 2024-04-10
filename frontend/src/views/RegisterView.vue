@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-[calc(100vh-4rem)]">
     <!-- Left Pane -->
     <div class="hidden lg:flex items-center justify-center flex-1 bg-white text-black">
       <div class="max-w-md text-center">
