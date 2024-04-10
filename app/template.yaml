@@ -11,20 +11,7 @@ Resources:
         openapi: '3.0'
         info: {}
         paths:
-          /:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Home.Arn}/invocations
-              responses: {}
           /login:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Login.Arn}/invocations
-              responses: {}
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
@@ -32,31 +19,11 @@ Resources:
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostLogin.Arn}/invocations
               responses: {}
           /register:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Register.Arn}/invocations
-              responses: {}
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostRegister.Arn}/invocations
-              responses: {}
-          /profile:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Profile.Arn}/invocations
-              responses: {}
-          /match:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Match.Arn}/invocations
               responses: {}
           /leaderboard:
             get:
@@ -83,75 +50,13 @@ Resources:
           KeyType: HASH
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
-  Home:
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: Home
-      CodeUri: home/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      MemorySize: 128
-      Timeout: 30
-      Tracing: Active
-      Events:
-        ApiGET:
-          Type: Api
-          Properties:
-            Path: /
-            Method: GET
-            RestApiId: !Ref Api
-      Environment:
-        Variables:
-          USERS_TABLE_NAME: !Ref Users
-          USERS_TABLE_ARN: !GetAtt Users.Arn
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Users
-  HomeLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Home}
-  Login:
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: Login
-      CodeUri: login/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      MemorySize: 128
-      Timeout: 30
-      Tracing: Active
-      Events:
-        ApiGETlogin:
-          Type: Api
-          Properties:
-            Path: /login
-            Method: GET
-            RestApiId: !Ref Api
-      Environment:
-        Variables:
-          USERS_TABLE_NAME: !Ref Users
-          USERS_TABLE_ARN: !GetAtt Users.Arn
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Users
-  LoginLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Login}
   PostLogin:
     Type: AWS::Serverless::Function
     Properties:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: PostLogin
-      CodeUri: login_post/
+      CodeUri: login/
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128
@@ -176,44 +81,13 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${PostLogin}
-  Register:
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: Register
-      CodeUri: register/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      MemorySize: 128
-      Timeout: 30
-      Tracing: Active
-      Events:
-        ApiGETregister:
-          Type: Api
-          Properties:
-            Path: /register
-            Method: GET
-            RestApiId: !Ref Api
-      Environment:
-        Variables:
-          USERS_TABLE_NAME: !Ref Users
-          USERS_TABLE_ARN: !GetAtt Users.Arn
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Users
-  RegisterLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Register}
   PostRegister:
     Type: AWS::Serverless::Function
     Properties:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: PostRegister
-      CodeUri: register_post/
+      CodeUri: register/
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128
@@ -238,68 +112,6 @@ Resources:
     DeletionPolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${PostRegister}
-  Profile:
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: Profile
-      CodeUri: profile/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      MemorySize: 128
-      Timeout: 30
-      Tracing: Active
-      Events:
-        ApiGETprofile:
-          Type: Api
-          Properties:
-            Path: /profile
-            Method: GET
-            RestApiId: !Ref Api
-      Environment:
-        Variables:
-          USERS_TABLE_NAME: !Ref Users
-          USERS_TABLE_ARN: !GetAtt Users.Arn
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Users
-  ProfileLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Profile}
-  Match:
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: !Sub
-        - Stack ${AWS::StackName} Function ${ResourceName}
-        - ResourceName: Match
-      CodeUri: match/
-      Handler: app.lambda_handler
-      Runtime: python3.10
-      MemorySize: 128
-      Timeout: 30
-      Tracing: Active
-      Events:
-        ApiGETmatch:
-          Type: Api
-          Properties:
-            Path: /match
-            Method: GET
-            RestApiId: !Ref Api
-      Environment:
-        Variables:
-          USERS_TABLE_NAME: !Ref Users
-          USERS_TABLE_ARN: !GetAtt Users.Arn
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Users
-  MatchLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Match}
   Leaderboard:
     Type: AWS::Serverless::Function
     Properties:
@@ -319,6 +131,13 @@ Resources:
             Path: /leaderboard
             Method: GET
             RestApiId: !Ref Api
+      Environment:
+        Variables:
+          USERS_TABLE_NAME: !Ref Users
+          USERS_TABLE_ARN: !GetAtt Users.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Users
   LeaderboardLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
