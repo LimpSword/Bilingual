@@ -59,7 +59,7 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: PostLogin
-      CodeUri: login/
+      CodeUri: login
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128
@@ -79,6 +79,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Users
+    Metadata:
+      SamResourceId: PostLogin
   PostLoginLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -90,7 +92,7 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: PostRegister
-      CodeUri: register/
+      CodeUri: register
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128
@@ -110,6 +112,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Users
+    Metadata:
+      SamResourceId: PostRegister
   PostRegisterLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -121,7 +125,7 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: Leaderboard
-      CodeUri: leaderboard/
+      CodeUri: leaderboard
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128
@@ -141,8 +145,18 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Users
+    Metadata:
+      SamResourceId: Leaderboard
   LeaderboardLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${Leaderboard}
+Metadata:
+  AWS::Composer::Groups:
+    Group:
+      Label: Api
+      Members:
+        - Leaderboard
+        - PostRegister
+        - PostLogin
