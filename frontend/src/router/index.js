@@ -18,6 +18,16 @@ const router = createRouter({
             path: '/register',
             name: 'register',
             component: () => import('../views/RegisterView.vue')
+        },
+        {
+            path: '/leaderboard',
+            name: 'leaderboard',
+            component: () => import('../views/LeaderboardView.vue')
+        },
+        {
+            path: '/:pathMatch(.*)*',
+            name: 'not-found',
+            component: () => import('../views/NotFoundView.vue')
         }
     ]
 })
