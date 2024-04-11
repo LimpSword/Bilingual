@@ -22,8 +22,12 @@
           </tr>
           </tbody>
         </table>
+        <!-- Special states -->
         <div v-if="loading" class="flex justify-center items-center mt-2">
           <div class="loader"></div>
+        </div>
+        <div v-if="!loading && leaderboard.length === 0" class="text-center text-gray-500 mt-4">
+          No players found
         </div>
       </div>
     </div>
