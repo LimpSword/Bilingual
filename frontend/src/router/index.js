@@ -20,6 +20,11 @@ const router = createRouter({
             component: () => import('../views/RegisterView.vue')
         },
         {
+            path: "/signout",
+            name: "signout",
+            component: () => import('../views/SignoutView.vue')
+        },
+        {
             path: '/leaderboard',
             name: 'leaderboard',
             component: () => import('../views/LeaderboardView.vue')
