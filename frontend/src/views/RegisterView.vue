@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-[calc(100vh-4rem)]">
     <!-- Left Pane -->
-    <div class="hidden lg:flex items-center justify-center flex-1 bg-white text-black">
+    <div class="hidden lg:flex items-center justify-center flex-1 text-black">
       <div class="max-w-md text-center">
         <a href="/">
           <svg xmlns="http://www.w3.org/2000/svg" width="524.67004" height="531.39694" class="w-full"
