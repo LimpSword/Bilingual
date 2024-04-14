@@ -10,7 +10,7 @@ from selenium.webdriver.firefox.options import Options
 
 website = 'https://www.wordreference.com/enfr/turkey'
 option_driver = Options()
-# option_driver.add_argument("--headless")
+option_driver.add_argument("--headless")
 
 driver = webdriver.Firefox(options=option_driver)
 

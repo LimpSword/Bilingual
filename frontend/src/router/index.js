@@ -30,6 +30,11 @@ const router = createRouter({
             component: () => import('../views/LeaderboardView.vue')
         },
         {
+            path: '/play',
+            name: 'play',
+            component: () => import('../views/AnswerView.vue')
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'not-found',
             component: () => import('../views/NotFoundView.vue')
