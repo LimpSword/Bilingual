@@ -3,7 +3,7 @@
     <main>
       <div class="panel">
         <div class="panel-header">
-          <h2>{{ word.text }}</h2>
+          <h2>{{ term }}</h2>
         </div>
         <div class="panel-body">
           <input v-model="translation" type="text" placeholder="Type the translation" />
