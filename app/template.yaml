@@ -172,7 +172,7 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: GetRandomWord
-      CodeUri: playing
+      CodeUri: random_word
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128
