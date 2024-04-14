@@ -8,11 +8,12 @@
         <div class="panel-body">
           <input v-model="translation" type="text" placeholder="Type the translation" />
           <transition name="fade">
-            <div v-if="showErrorMessage" class="error-message">Incorrect translation. Please try again.</div>
+            <div v-if="showErrorMessage" class="error-message">{{ errorMessage }}</div>
           </transition>
           <div class="button-container">
-            <button @click="checkTranslation" v-if="showCheckButton">Check</button>
-            <button @click="nextWord" v-else class="next-button">Next Word</button>
+            <button @click="checkTranslation" v-if="showCheckButton">Answer</button>
+            <button @click="iWasCorrect" v-if="showCorrectButton">I was correct</button>
+            <button @click="skip" v-if="showSkipButton">Skip</button>
           </div>
           <transition name="fade">
             <div v-if="showCorrectMessage" class="correct-message">Correct!</div>
@@ -26,15 +27,48 @@
 <script>
 import axios from 'axios';
 
+function levenshteinDistance(str1, str2) {
+  const m = str1.length;
+  const n = str2.length;
+
+  // Create a matrix to store the distances
+  const dp = [];
+  for (let i = 0; i <= m; i++) {
+    dp[i] = [];
+    dp[i][0] = i;
+  }
+  for (let j = 0; j <= n; j++) {
+    dp[0][j] = j;
+  }
+
+  // Calculate the distances
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // Deletion
+        dp[i][j - 1] + 1, // Insertion
+        dp[i - 1][j - 1] + cost // Substitution
+      );
+    }
+  }
+
+  // Return the distance between the two strings
+  return dp[m][n];
+}
+
+
 export default {
   data() {
     return {
       term: "",
       translation: "",
-      showHint: true,
       showErrorMessage: false,
       showCheckButton: true,
-      showCorrectMessage: false
+      showCorrectButton: false,
+      showSkipButton: false,
+      showCorrectMessage: false,
+      errorMessage: "Incorrect translation. Please try again."
     };
   },
   async created() {
@@ -57,14 +91,36 @@ export default {
           this.nextWord();
         }, 2000); // Hide correct message after 2 seconds
       } else {
-        this.showErrorMessage = true;
+        if (levenshteinDistance(response.data.correctTranslation, this.translation) <= 2 || this.term.toLowerCase() === this.translation.toLowerCase()){
+          this.errorMessage = "Incorrect translation. Did you mean " + response.data.correctTranslation + "?";
+          this.showErrorMessage = true;
+          this.showCorrectButton = true;
+          this.showSkipButton = true;
+        } else {
+          this.errorMessage = "Incorrect translation. It is " + response.data.correctTranslation + " please write it before continuing.";
+          this.showErrorMessage = true;
+          this.showSkipButton = true;
+          this.showCorrectButton = false;
+        }
       }
+    },
+    async iWasCorrect() {
+      // Logic to handle the "I was correct" button click
+      // You can add your custom logic here
+      await this.nextWord();
+    },
+    async skip() {
+      // Logic to handle the "Skip" button click
+      // You can add your custom logic here
+      await this.nextWord();
     },
     async nextWord() {
       this.translation = "";
       this.showErrorMessage = false;
       await this.getRandomWord();
       this.showCheckButton = true;
+      this.showCorrectButton = false;
+      this.showSkipButton = false;
     }
   }
 };
