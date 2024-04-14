@@ -7,10 +7,16 @@
         </div>
         <div class="panel-body">
           <input v-model="translation" type="text" placeholder="Type the translation" />
+          <transition name="fade">
+            <div v-if="showErrorMessage" class="error-message">Incorrect translation. Please try again.</div>
+          </transition>
           <div class="button-container">
-            <button @click="submitTranslation">Answer</button>
-            <button @click="showHint = false" v-if="showHint">Don't know?</button>
+            <button @click="checkTranslation" v-if="showCheckButton">Check</button>
+            <button @click="nextWord" v-else class="next-button">Next Word</button>
           </div>
+          <transition name="fade">
+            <div v-if="showCorrectMessage" class="correct-message">Correct!</div>
+          </transition>
         </div>
       </div>
     </main>
@@ -18,7 +24,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from 'axios';
 
 export default {
   data() {
@@ -26,35 +32,58 @@ export default {
       term: "",
       translation: "",
       showHint: true,
+      showErrorMessage: false,
+      showCheckButton: true,
+      showCorrectMessage: false
     };
   },
   async created() {
-    const response = await axios.get(import.meta.env.VITE_API_URL + '/random-word')
-    console.log(response)
-    this.term = response.data.english
-    console.log(this.term)
+    await this.getRandomWord();
   },
   methods: {
-    async submitTranslation() {
-      const response = await axios.post('/check-translation', {
+    async getRandomWord() {
+      const response = await axios.get(import.meta.env.VITE_API_URL + '/random-word');
+      this.term = response.data.english;
+    },
+    async checkTranslation() {
+      const response = await axios.post(import.meta.env.VITE_API_URL + '/check-translation', {
         english: this.term,
         french: this.translation
-      })
+      });
       if (response.data.correct) {
-        alert('Correct!')
-        const newResponse = await axios.get(import.meta.env.VITE_API_URL + '/random-word')
-        this.term = newResponse.data.english
-        this.translation = ''
+        this.showCorrectMessage = true;
+        setTimeout(() => {
+          this.showCorrectMessage = false;
+          this.nextWord();
+        }, 2000); // Hide correct message after 2 seconds
       } else {
-        alert('Incorrect. The correct translation is ' + response.data.correctTranslation)
-        this.translation = ''
+        this.showErrorMessage = true;
       }
     },
-  },
+    async nextWord() {
+      this.translation = "";
+      this.showErrorMessage = false;
+      await this.getRandomWord();
+      this.showCheckButton = true;
+    }
+  }
 };
 </script>
 
 <style scoped>
+/* Your existing styles */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+.correct-message {
+  color: green;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
 #app {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -134,4 +163,10 @@ input:focus {
 .button-container button:hover {
   background-color: #4245eb;
 }
+
+.error-message {
+  color: red;
+  margin-bottom: 1rem;
+}
+
 </style>

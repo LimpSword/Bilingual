@@ -204,7 +204,7 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: CheckTranslation
-      CodeUri: check-translation
+      CodeUri: check_translation
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 128

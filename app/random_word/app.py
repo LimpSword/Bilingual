@@ -14,7 +14,6 @@ def lambda_handler(event, context):
             print("random_word")
             response = table.scan()
             items = response['Items']
-            print(items)
             word = random.choice(items)
             print(word)
             english = word['english']
