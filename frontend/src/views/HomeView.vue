@@ -1,111 +1,45 @@
-<script setup>
-import TheWelcome from '../components/TheWelcome.vue'
-import HelloWorld from "@/components/HelloWorld.vue";
-</script>
-
 <template>
-  <div id="home">
-    <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125"/>
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!"/>
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/login">About</RouterLink>
-      </nav>
+  <div class="flex h-[calc(60vh+10rem)]">
+    <!-- Left Pane -->
+    <div class="hidden lg:flex items-center justify-center flex-1 bg-white text-black">
+      <div class="max-w-md text-center">
+        <img src="@/assets/online_learning.png">
+      </div>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome/>
-  </main>
+    <!-- Right Pane -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center">
+      <div class="w-full p-6">
+        <h1 class="text-7xl font-semibold mb-6 text-black text-center">Learn any language here!</h1>
+        <div class="mt-12 flex flex-col lg:flex-row items-center justify-between">
+          <div class="w-full mb-2 lg:mb-0">
+            <a href="/solo"
+                        class="w-2/3 h-20 flex m-auto justify-center items-center gap-2 bg-blue-300 text-2xl text-white p-2 rounded-md hover:bg-blue-400 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
+              <img class="w-10"
+                   src="@/assets/computer_icon.png"
+                   alt="">
+              Play Solo
+            </a>
+          </div>
+        </div>
+        <div class="mt-12 flex flex-col lg:flex-row items-center justify-between">
+          <div class="w-full mb-2 lg:mb-0">
+            <a href="/multiplayer"
+                        class="w-2/3 h-20 flex m-auto justify-center items-center gap-2 bg-green-400 text-2xl text-white p-2 rounded-md hover:bg-green-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
+              <img class="w-10" src="@/assets/multiplayer_icon.png" alt="">
+              Play Multiplayer
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #home {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+RouterLink {
+  padding: 0;
+  margin: 0;
 }
 </style>
-
-
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
+<script setup lang="ts">
+</script>
