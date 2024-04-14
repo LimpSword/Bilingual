@@ -161,11 +161,11 @@
       </div>
     </div>
     <!-- Right Pane -->
-    <div class="w-full bg-gray-100 lg:w-1/2 flex items-center justify-center">
+    <div class="w-full bg-gray-100 bg-opacity-40 lg:w-1/2 flex items-center justify-center">
       <div class="max-w-md w-full p-6">
         <h1 class="text-3xl font-semibold mb-6 text-black text-center">Login</h1>
         <h1 class="text-sm font-semibold mb-6 text-gray-500 text-center">Let's get back to learning!</h1>
-        <div class="mt-4 flex flex-col lg:flex-row items-center justify-between">
+<!--        <div class="mt-4 flex flex-col lg:flex-row items-center justify-between">
           <div class="w-full mb-2 lg:mb-0">
             <button type="button"
                     class="w-full flex justify-center items-center gap-2 bg-white text-sm text-gray-600 p-2 rounded-md hover:bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
@@ -182,9 +182,9 @@
               Login with Google
             </button>
           </div>
-        </div>
+        </div>-->
         <div class="mt-4 text-sm text-gray-600 text-center">
-          <p>or with your email</p>
+          <p>You can use your email</p>
         </div>
         <form class="space-y-4" @submit.prevent>
           <div>
