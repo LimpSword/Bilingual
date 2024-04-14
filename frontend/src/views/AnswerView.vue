@@ -29,8 +29,10 @@ export default {
     };
   },
   async created() {
-    const response = await axios.get('/random-word')
+    const response = await axios.get(import.meta.env.VITE_API_URL + '/random-word')
+    console.log(response)
     this.term = response.data.english
+    console.log(this.term)
   },
   methods: {
     async submitTranslation() {
@@ -40,7 +42,7 @@ export default {
       })
       if (response.data.correct) {
         alert('Correct!')
-        const newResponse = await axios.get('/random-word')
+        const newResponse = await axios.get(import.meta.env.VITE_API_URL + '/random-word')
         this.term = newResponse.data.english
         this.translation = ''
       } else {

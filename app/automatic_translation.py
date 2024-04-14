@@ -450,6 +450,10 @@ def all_details(La, Lb, word):
                 sep_trad.append(current_trad)
     # we need to add the last translation
 
+    print(sep_trad)
+
+    return sep_trad
+
     trads = []
 
     for x in sep_trad:

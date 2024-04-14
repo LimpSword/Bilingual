@@ -35,6 +35,11 @@ const router = createRouter({
             component: () => import('../views/AnswerView.vue')
         },
         {
+            path: '/solo',
+            name: 'solo',
+            component: () => import('../views/SoloView.vue')
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'not-found',
             component: () => import('../views/NotFoundView.vue')
