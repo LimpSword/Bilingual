@@ -1,0 +1,322 @@
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  PvpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: PvpApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+  ActivePvp:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  SendMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: sendmessage/
+      Handler: app.lambda_handler
+      MemorySize: 256
+      Runtime: python3.10
+      Environment:
+        Variables:
+          ACTIVEPVP_TABLE_NAME: !Ref ActivePvp
+          ACTIVEPVP_TABLE_ARN: !GetAtt ActivePvp.Arn
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource:
+                - !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PvpApi}/*
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivePvp
+      Timeout: 30
+  OnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ondisconnect/
+      Handler: app.lambda_handler
+      MemorySize: 256
+      Runtime: python3.10
+      Environment:
+        Variables:
+          ACTIVEPVP_TABLE_NAME: !Ref ActivePvp
+          ACTIVEPVP_TABLE_ARN: !GetAtt ActivePvp.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivePvp
+      Timeout: 30
+  OnConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: onconnect/
+      Handler: app.lambda_handler
+      MemorySize: 256
+      Runtime: python3.10
+      Environment:
+        Variables:
+          ACTIVEPVP_TABLE_NAME: !Ref ActivePvp
+          ACTIVEPVP_TABLE_ARN: !GetAtt ActivePvp.Arn
+          FOUNDMATCH_FUNCTION_NAME: !Ref FoundMatch
+          FOUNDMATCH_FUNCTION_ARN: !GetAtt FoundMatch.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivePvp
+        - LambdaInvokePolicy:
+            FunctionName: !Ref FoundMatch
+      Timeout: 30
+  SendInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PvpApi
+      Description: Send Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendMessageFunction.Arn}/invocations
+  SendRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PvpApi
+      RouteKey: sendmessage
+      AuthorizationType: NONE
+      OperationName: SendRoute
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref SendInteg
+  DisconnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PvpApi
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PvpApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref DisconnectInteg
+  ConnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PvpApi
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PvpApi
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ConnectInteg
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref PvpApi
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - SendRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref PvpApi
+  FoundMatch:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: FoundMatch
+      CodeUri: found_match
+      Handler: handler.handler
+      Runtime: python3.10
+      MemorySize: 256
+      Timeout: 30
+      Tracing: Active
+      Environment:
+        Variables:
+          FOUNDMATCHWAIT_STATE_MACHINE_NAME: !GetAtt FoundMatchWait.Name
+          FOUNDMATCHWAIT_STATE_MACHINE_ARN: !Ref FoundMatchWait
+      Policies:
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !GetAtt FoundMatchWait.Name
+  FoundMatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FoundMatch}
+  FoundMatchWait:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Definition:
+        StartAt: Wait
+        States:
+          Wait:
+            Type: Wait
+            Seconds: 3
+            Next: Lambda Invoke
+          Lambda Invoke:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              Payload.$: $
+              FunctionName: ${name}
+            End: true
+      Logging:
+        Level: ALL
+        IncludeExecutionData: true
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt FoundMatchWaitLogGroup.Arn
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogDelivery
+                - logs:GetLogDelivery
+                - logs:UpdateLogDelivery
+                - logs:DeleteLogDelivery
+                - logs:ListLogDeliveries
+                - logs:PutResourcePolicy
+                - logs:DescribeResourcePolicies
+                - logs:DescribeLogGroups
+              Resource: '*'
+        - LambdaInvokePolicy:
+            FunctionName: !Ref SendWord
+      Tracing:
+        Enabled: true
+      Type: STANDARD
+      DefinitionSubstitutions:
+        Wait10Seconds: !Ref AWS::NoValue
+        name: !GetAtt SendWord.Arn
+  FoundMatchWaitLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub
+        - /aws/vendedlogs/states/${AWS::StackName}-${ResourceId}-Logs
+        - ResourceId: FoundMatchWait
+  SendWord:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: SendWord
+      CodeUri: send_word
+      Handler: handler.handler
+      Runtime: python3.10
+      MemorySize: 256
+      Timeout: 30
+      Tracing: Active
+      Environment:
+        Variables:
+          SENDWORDWAIT_STATE_MACHINE_NAME: !GetAtt SendWordWait.Name
+          SENDWORDWAIT_STATE_MACHINE_ARN: !Ref SendWordWait
+      Policies:
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !GetAtt SendWordWait.Name
+  SendWordLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${SendWord}
+  SendWordWait:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Definition:
+        StartAt: Wait
+        States:
+          Wait:
+            Type: Wait
+            Seconds: 3
+            Next: Lambda Invoke
+          Lambda Invoke:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              Payload.$: $
+              FunctionName: ${name}
+            End: true
+      Logging:
+        Level: ALL
+        IncludeExecutionData: true
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt SendWordWaitLogGroup.Arn
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogDelivery
+                - logs:GetLogDelivery
+                - logs:UpdateLogDelivery
+                - logs:DeleteLogDelivery
+                - logs:ListLogDeliveries
+                - logs:PutResourcePolicy
+                - logs:DescribeResourcePolicies
+                - logs:DescribeLogGroups
+              Resource: '*'
+        - LambdaInvokePolicy:
+            FunctionName: !Ref Evaluate
+      Tracing:
+        Enabled: true
+      Type: STANDARD
+      DefinitionSubstitutions:
+        LambdaFunction1: !Ref AWS::NoValue
+        name: !GetAtt Evaluate.Arn
+  SendWordWaitLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub
+        - /aws/vendedlogs/states/${AWS::StackName}-${ResourceId}-Logs
+        - ResourceId: SendWordWait
+  Evaluate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: Evaluate
+      CodeUri: evaluate
+      Handler: handler.handler
+      Runtime: python3.10
+      MemorySize: 256
+      Timeout: 30
+      Tracing: Active
+  EvaluateLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Evaluate}
+Outputs:
+  WebSocketURI:
+    Description: The WSS Protocol URI to connect to
+    Value: !Join
+      - ''
+      - - wss://
+        - !Ref PvpApi
+        - .execute-api.
+        - !Ref AWS::Region
+        - .amazonaws.com/
+        - !Ref Stage

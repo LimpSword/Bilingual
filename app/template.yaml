@@ -39,7 +39,7 @@ Resources:
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetRandomWord.Arn}/invocations
               responses: {}
-          /api/check-translation:
+          /api/checkTranslation:
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
@@ -58,8 +58,6 @@ Resources:
     Properties:
       AttributeDefinitions:
         - AttributeName: email
-          AttributeType: S
-        - AttributeName: password
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
@@ -211,16 +209,16 @@ Resources:
       Timeout: 30
       Tracing: Active
       Events:
-        ApiPOSTcheck-translation:
+        ApiPOSTcheckTranslation:
           Type: Api
           Properties:
-            Path: /check-translation
+            Path: /checkTranslation
             Method: POST
             RestApiId: !Ref Api
         ApiPOSTapichecktranslation:
           Type: Api
           Properties:
-            Path: /api/check-translation
+            Path: /api/checkTranslation
             Method: POST
             RestApiId: !Ref Api
       Environment:
@@ -257,6 +255,12 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+        - IndexName: FrenchIndex
+          KeySchema:
+              - AttributeName: french
+                KeyType: HASH
+          Projection:
+              ProjectionType: ALL
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 Metadata:

@@ -13,7 +13,7 @@
         <div class="mt-12 flex flex-col lg:flex-row items-center justify-between">
           <div class="w-full mb-2 lg:mb-0">
             <a href="/solo"
-                        class="w-2/3 h-20 flex m-auto justify-center items-center gap-2 bg-blue-300 text-2xl text-white p-2 rounded-md hover:bg-blue-400 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
+                        class="shadow-lg w-2/3 h-20 flex m-auto justify-center items-center gap-2 bg-blue-300 text-2xl text-white p-2 rounded-md hover:bg-blue-400 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
               <img class="w-10"
                    src="@/assets/computer_icon.png"
                    alt="">
@@ -24,7 +24,7 @@
         <div class="mt-12 flex flex-col lg:flex-row items-center justify-between">
           <div class="w-full mb-2 lg:mb-0">
             <a href="/multiplayer"
-                        class="w-2/3 h-20 flex m-auto justify-center items-center gap-2 bg-green-400 text-2xl text-white p-2 rounded-md hover:bg-green-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
+                        class="shadow-lg w-2/3 h-20 flex m-auto justify-center items-center gap-2 bg-green-400 text-2xl text-white p-2 rounded-md hover:bg-green-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors duration-300">
               <img class="w-10" src="@/assets/multiplayer_icon.png" alt="">
               Play Multiplayer
             </a>

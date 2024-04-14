@@ -40,6 +40,11 @@ const router = createRouter({
             component: () => import('../views/SoloView.vue')
         },
         {
+            path: '/multiplayer',
+            name: 'multiplayer',
+            component: () => import('../views/MultiplayerView.vue')
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'not-found',
             component: () => import('../views/NotFoundView.vue')
