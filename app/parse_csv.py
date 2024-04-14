@@ -9,7 +9,7 @@ import boto3
 # Set up DynamoDB client
 
 
-os.environ['TRANSLATIONS_TABLE_NAME'] = 'translation_table'
+os.environ['TRANSLATIONS_TABLE_NAME'] = 'TranslationsTable'
 
 dynamodb = boto3.resource('dynamodb', endpoint_url='http://172.17.0.1:8000')
 table_name = os.environ['TRANSLATIONS_TABLE_NAME']

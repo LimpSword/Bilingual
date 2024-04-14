@@ -12,6 +12,7 @@ def lambda_handler(event, context):
         # get a random word from the database
         try:
             print("random_word")
+            print(table,os.environ['TRANSLATIONS_TABLE_NAME'])
             response = table.scan()
             items = response['Items']
             print(items)
