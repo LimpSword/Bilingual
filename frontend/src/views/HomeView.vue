@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-[calc(60vh+10rem)]">
     <!-- Left Pane -->
-    <div class="hidden lg:flex items-center justify-center flex-1 bg-white text-black">
+    <div class="hidden lg:flex items-center justify-center flex-1 text-black">
       <div class="max-w-md text-center">
         <img src="@/assets/online_learning.png">
       </div>
