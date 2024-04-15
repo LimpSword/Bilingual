@@ -7,6 +7,7 @@
         <div class="max-w-md">
           <p class="text-2xl font-semibold">Play against another person to gain Elo and expand your vocabulary!</p>
           <p class="mt-5 text-xl">The vocabulary in multiplayer is limited but is expanding with your Elo!</p>
+          <p class="mt-3">Currently only available from French to English</p>
         </div>
       </div>
       <!-- Right Pane -->

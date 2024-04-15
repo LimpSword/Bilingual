@@ -47,7 +47,7 @@
                 <span class="absolute -inset-1.5"/>
                 <span class="sr-only">Open user menu</span>
                 <img class="h-8 w-8 rounded-full"
-                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                     src="@/assets/user.png"
                      alt=""/>
               </MenuButton>
             </div>
@@ -58,10 +58,10 @@
                         leave-to-class="transform opacity-0 scale-95">
               <MenuItems
                   class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <MenuItem v-slot="{ active }">
+                <!--<MenuItem v-slot="{ active }">
                   <a href="/profile" :class="[active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700']">Your
                     Profile</a>
-                </MenuItem>
+                </MenuItem>-->
                 <MenuItem v-slot="{ active }">
                   <a href="/signout" :class="[active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700']">Sign
                     out</a>
