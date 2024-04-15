@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         )
         return {
             'statusCode': 200,
-            'body': json.dumps({'session_id': session_id}),
+            'body': json.dumps({'session_id': session_id, "username": username, "email": email}),
             'headers': {
                 'Access-Control-Allow-Origin': '*'
             }

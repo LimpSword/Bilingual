@@ -1,15 +1,20 @@
 import asyncio
 import random
-import string
+
 import websockets
 
 # List to store connected players
 players = []
+players_name = {}
 
 basic_french_en = {
     "réunion": "meeting",
     "entretien": "interview",
-    "lettre de motivation": "cover letter"
+    "lettre de motivation": "cover letter",
+    "déchiffrer": "decipher",
+    "salarié": "employee",
+    "employeur": "employer",
+    "déménagement": "relocation"
 }
 
 
@@ -24,6 +29,11 @@ def generate_word(avoid: list):
 # Function to match players and start the game loop
 async def match_players(websocket):
     global players
+    async for msg in websocket:
+        if msg.startswith("/name"):
+            players_name[websocket] = msg.split(" ")[1]
+            break
+    print(players_name)
     if len(players) >= 1:
         print("Matched players")
         await asyncio.create_task(game_loop(players[len(players) - 1], websocket))
@@ -42,11 +52,12 @@ async def game_end():
 # Game loop function
 async def game_loop(player1, player2):
     print(player1, player2)
+    response_count = {player1: 0, player2: 0}
     try:
         # Send hello message to both players and wait 3s
         await asyncio.gather(
-            player1.send("/hello"),
-            player2.send("/hello"),
+            player1.send("/hello " + players_name[player2]),
+            player2.send("/hello" + players_name[player1]),
             asyncio.sleep(4)
         )
 
@@ -58,30 +69,42 @@ async def game_loop(player1, player2):
             websockets.broadcast({player2}, f"{word}")
             await player1.send(f"{word}")
 
-            # Wait for responses with a timeout (succeed on first response)
-            done, pending = await asyncio.wait(
-                [player1.recv(), player2.recv()],
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=15.0
-            )
+            async def iter_messages(player, correct_answer):
+                async for message in player:
+                    print(message, correct_answer)
+                    if message == correct_answer:
+                        return player
+                return None
 
-            # Get the responses that were received
-            player1_response = player2_response = None
-            for future in done:
-                if future.exception() is not None:
-                    print(future.exception())
-                    continue
-                response = future.result()
-                if response is not None:
-                    if future.get_coro() == player1.recv:
-                        player1_response = response
-                    else:
-                        player2_response = response
+            player1_response = None
+            player2_response = None
+            # Wait for responses with a timeout (succeed on first response)
+            try:
+                done, pending = await asyncio.wait(
+                    [iter_messages(player, basic_french_en[word]) for player in [player1, player2]],
+                    timeout=10,
+                    return_when=asyncio.FIRST_COMPLETED)
+            except asyncio.TimeoutError:
+                # Time limit reached, no winner
+                print("Time's up! No one answered correctly.")
+            else:
+                for task in done:
+                    winning_player = task.result()
+                    print(f"Player {winning_player} answered correctly!")
+                    if winning_player == player1:
+                        player1_response = basic_french_en[word]
+                    if winning_player == player2:
+                        player2_response = basic_french_en[word]
+
+            # Cancel any remaining tasks
+            for task in pending:
+                task.cancel()
 
             print("---", word, "---")
             # Check if both players responded with the correct word
             if player1_response == basic_french_en[word]:
                 result = 'success'
+                response_count[player1] += 1
             else:
                 result = 'failure'
             await player1.send(f"/result {result}")
@@ -89,19 +112,21 @@ async def game_loop(player1, player2):
 
             if player2_response == basic_french_en[word]:
                 result = 'success'
+                response_count[player2] += 1
             else:
                 result = 'failure'
             await player2.send(f"/result {result}")
             print("Player 2 response", player2_response, result)
             print("------")
 
-            # Cancel recv
-            for task in pending:
-                task.cancel()
             await asyncio.sleep(1)
+
+        has_player1_won = "win" if response_count[player1] > response_count[player2] else "lose"
+        has_player2_won = "win" if response_count[player2] > response_count[player1] else "lose"
+
         await asyncio.gather(
-            player1.send('/end'),
-            player2.send('/end')
+            player1.send('/end ' + has_player1_won),
+            player2.send('/end ' + has_player2_won)
         )
     except websockets.exceptions.ConnectionClosedError:
         # Handle player disconnection

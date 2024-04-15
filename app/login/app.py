@@ -29,7 +29,7 @@ def lambda_handler(event, context):
             table.put_item(Item=item)
             return {
                 'statusCode': 200,
-                'body': json.dumps({'session_id': session_id}),
+                'body': json.dumps({'session_id': session_id, 'username': item['username'], 'email': email}),
                 'headers': {
                     'Access-Control-Allow-Origin': '*'
                 }
