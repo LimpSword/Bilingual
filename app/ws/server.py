@@ -57,7 +57,7 @@ async def game_loop(player1, player2):
         # Send hello message to both players and wait 3s
         await asyncio.gather(
             player1.send("/hello " + players_name[player2]),
-            player2.send("/hello" + players_name[player1]),
+            player2.send("/hello " + players_name[player1]),
             asyncio.sleep(4)
         )
 
