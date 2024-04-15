@@ -46,12 +46,26 @@ Resources:
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CheckTranslation.Arn}/invocations
               responses: {}
-          /api/getMoreTranslation:
+          /api/new-category:
             post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetFromWord.Arn}/invocations
+              responses: {}
+          /api/get-categories:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCategories.Arn}/invocations
+              responses: {}
+          /api/get-category-words:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCategoriesWords.Arn}/invocations
               responses: {}
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
@@ -266,24 +280,129 @@ Resources:
       Description: !Sub
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: GetFromWord
-      CodeUri: solo
+      CodeUri: newCategory
       Handler: app.lambda_handler
       Runtime: python3.10
       MemorySize: 3008
       Timeout: 30
       Tracing: Active
       Events:
-        ApiPOSTapigetMoreTranslation:
+        ApiPOSTapinewcategory:
           Type: Api
           Properties:
-            Path: /api/getMoreTranslation
+            Path: /api/new-category
             Method: POST
             RestApiId: !Ref Api
+      Environment:
+        Variables:
+          CATEGORIES_TABLE_NAME: !Ref Categories
+          CATEGORIES_TABLE_ARN: !GetAtt Categories.Arn
+          CATEGORIESWORDS_TABLE_NAME: !Ref CategoriesWords
+          CATEGORIESWORDS_TABLE_ARN: !GetAtt CategoriesWords.Arn
+          TRANSLATIONS_TABLE_NAME: !Ref TranslationsTable
+          TRANSLATIONS_TABLE_NAME_ARN: !GetAtt TranslationsTable.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Categories
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CategoriesWords
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TranslationsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Categories
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CategoriesWords
   GetFromWordLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${GetFromWord}
+  Categories:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: categoryName
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: categoryName
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  CategoriesWords:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: categoryName
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: categoryName
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  GetCategories:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: GetCategories
+      CodeUri: getCategories
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Events:
+        ApiGETapigetcategories:
+          Type: Api
+          Properties:
+            Path: /api/get-categories
+            Method: GET
+            RestApiId: !Ref Api
+      Environment:
+        Variables:
+          CATEGORIES_TABLE_NAME: !Ref Categories
+          CATEGORIES_TABLE_ARN: !GetAtt Categories.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Categories
+  GetCategoriesLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetCategories}
+  GetCategoriesWords:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: GetCategoriesWords
+      CodeUri: getWords
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Environment:
+        Variables:
+          CATEGORIESWORDS_TABLE_NAME: !Ref CategoriesWords
+          CATEGORIESWORDS_TABLE_ARN: !GetAtt CategoriesWords.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CategoriesWords
+      Events:
+        ApiPOSTapigetcategorywords:
+          Type: Api
+          Properties:
+            Path: /api/get-category-words
+            Method: POST
+            RestApiId: !Ref Api
+  GetCategoriesWordsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetCategoriesWords}
 Metadata:
   AWS::Composer::Groups:
     Group:
@@ -295,3 +414,5 @@ Metadata:
         - GetRandomWord
         - CheckTranslation
         - GetFromWord
+        - GetCategories
+        - GetCategoriesWords

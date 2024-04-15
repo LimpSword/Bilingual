@@ -40,6 +40,11 @@ const router = createRouter({
             component: () => import('../views/SoloView.vue')
         },
         {
+            path: '/new-category',
+            name: 'newCategory',
+            component: () => import('../views/newCategory.vue')
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'not-found',
             component: () => import('../views/NotFoundView.vue')

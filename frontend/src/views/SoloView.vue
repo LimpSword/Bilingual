@@ -35,16 +35,16 @@
       <div class="panel select-category">
         <h2>Select Category</h2>
         <div class="category-list">
-          <button v-for="category in categories" :key="category.id" @click="selectCategory(category)">
-            {{ category.name }}
+          <button v-for="category in categories" :key="category.categoryName" @click="selectCategory(category)">
+            {{ category.categoryName }}
           </button>
-          <button class="create-category-button" @click="goToCreateCategoryPage">New Category</button>
+          <button class="create-category-button" @click="goToNewCategoryPage">New Category</button>
         </div>
         <div class="selected-category" v-if="selectedCategory">
-          <h3>Selected Category: {{ selectedCategory.name }}</h3>
-
+          <h3>Selected Category: {{ selectedCategory.categoryName }}</h3>
+          <!-- Display words for selected category -->
           <div class="word-list">
-            <div v-for="word in selectedCategory.words" :key="word.id">
+            <div v-for="word in selectedCategory.words" :key="word.id" @click="handleWordClick(word)">
               {{ word.label }}: {{ word.text }}
             </div>
           </div>
@@ -65,14 +65,14 @@ export default {
       selectedLanguage: 'english',
       languages: ['english', 'french', 'spanish', 'japanese', 'korean', 'chinese', 'german', 'dutch', 'swedish', 'russian', 'portuguese', 'polish', 'romanian', 'czech', 'greek', 'turkish', 'icelandic', 'arabic', 'italian', 'other'],
       translations: [],
-      categories: [
-        {id: 1, name: 'Category 1', words: [{id: 1, label: 'Label 1', text: 'Word 1'}]},
-        {id: 2, name: 'Category 2', words: [{id: 2, label: 'Label 2', text: 'Word 2'}]},
-        {id: 3, name: 'Category 3', words: [{id: 3, label: 'Label 3', text: 'Word 3'}]},
-      ],
+      categories: [],
       selectedCategory: null,
     };
 
+  },
+    created() {
+    // Fetch categories from the server when the component is created
+    this.fetchCategories();
   },
   methods: {
     getTranslation() {
@@ -90,8 +90,22 @@ export default {
             console.error('Error fetching translation:', error);
           });
     },
+    fetchCategories() {
+      axios.get(import.meta.env.VITE_API_URL + '/get-categories')
+        .then(response => {
+          console.log(response)
+          this.categories = response.data;
+        })
+        .catch(error => {
+          console.error('Error fetching categories:', error);
+        });
+    },
     selectCategory(category) {
+      axios.post( import.meta.env.VITE_API_URL + '/get-categories',  {'category' : category})
       this.selectedCategory = category;
+    },
+    goToNewCategoryPage() {
+      this.$router.push('/new-category');
     },
   },
 };
