@@ -3,26 +3,34 @@
     <div class="container">
       <div class="panel lookup-translation">
         <h2>Look up Translation</h2>
-        <input v-model="wordToTranslate" type="text" placeholder="Enter a word"/>
-        <select v-model="originLanguage">
-          <option v-for="language in languages" :key="language">{{ language }}</option>
-        </select>
-        <select v-model="selectedLanguage">
-          <option v-for="language in languages" :key="language">{{ language }}</option>
-        </select>
-        <button @click="getTranslation">Translate</button>
+        <div class="input-group">
+          <input v-model="wordToTranslate" type="text" placeholder="Enter a word"/>
+          <select v-model="originLanguage">
+            <option v-for="language in languages" :key="language">{{ language }}</option>
+          </select>
+          <select v-model="selectedLanguage">
+            <option v-for="language in languages" :key="language">{{ language }}</option>
+          </select>
+          <button @click="getTranslation">Translate</button>
+        </div>
+        <!-- Display translations here -->
         <div class="translation-results" v-if="translations.length > 0">
           <h3>Translations:</h3>
-          <div v-for="(translation, index) in translations" :key="index">
-            <div>{{ index + 1 }}. {{ translation.frword }}</div>
-            <div v-for="(translationDetail, detailIndex) in translation.toword" :key="detailIndex">
-              - {{ translationDetail }}
-              <div v-if="translation.frex || translation.toex">
-                <b>Example:</b> {{ translation.frex }} => {{ translation.toex }}
+          <div class="translation-item" v-for="(translation, index) in translations" :key="index">
+            <div class="translation-row">
+              <div class="frword">{{ translation.frword }}</div>
+              <div class="translation-details">
+                <div v-for="(translationDetail, detailIndex) in translation.toword" :key="detailIndex" class="translation-detail">
+                  {{ translationDetail }}
+                </div>
+                <div v-if="translation.frex || translation.toex" class="translation-example">
+                  <b>Example:</b> {{ translation.frex }} <br> {{ translation.toex }}
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <!-- End of translation display -->
       </div>
       <div class="panel select-category">
         <h2>Select Category</h2>
@@ -72,11 +80,11 @@ export default {
       const destinationLanguage = this.selectedLanguage.toLowerCase(); // Use the selected destination language
 
       // Make a GET request to your Flask server with the word, origin language, and destination language as parameters
-      axios.get(`/translate?word=${this.wordToTranslate}&origin_language=${originLanguage}&destination_language=${destinationLanguage}`)
+      axios.post( 'http://127.0.0.1:5000/moreTrad',  {'word' : this.wordToTranslate, 'origin_language' : originLanguage ,'destination_language' : destinationLanguage})
           .then(response => {
             // Update component data with the response from the server
             console.log(response.data)
-            this.translations = response.data.translations;
+            this.translations = response.data;
           })
           .catch(error => {
             console.error('Error fetching translation:', error);
@@ -91,55 +99,58 @@ export default {
 
 <style scoped>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  margin-top: 30px;
 }
 
 .container {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
   gap: 2rem;
 }
 
 .panel {
   background-color: #f2f2f2;
-  padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 50%;
   min-height: 600px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  text-align: left;
+  padding: 2rem;
 }
 
 .panel h2 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 1rem;
 }
 
-input, select {
-  width: 100%;
+.lookup-translation {
+  max-height: 80vh; /* Limit the maximum height of the translation section */
+  overflow: hidden; /* Hide any content that overflows */
+}
+
+.translation-results {
+  overflow-y: auto; /* Enable vertical scrolling when content overflows */
+  max-height: calc(80vh - 200px); /* Adjusted maximum height to prevent overflow */
+}
+
+.input-group {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+input, select, button {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin-bottom: 1rem;
 }
 
 button {
   background-color: #6366f1;
   color: white;
-  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
 }
 
 button:hover {
@@ -148,12 +159,35 @@ button:hover {
 
 .translation-results {
   margin-top: 1rem;
-  text-align: left;
 }
 
-.example-sentences {
-  margin-top: 1rem;
-  text-align: left;
+.translation-item {
+  margin-bottom: 2rem; /* Increased margin between translation items */
+  border-radius: 8px; /* Add border radius for rounded corners */
+  background-color: #fff; /* White background */
+  padding: 1rem; /* Padding for inner content */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow */
+}
+
+.translation-index {
+  font-weight: bold;
+}
+
+.translation-content {
+  margin-left: 1rem;
+}
+
+.frword {
+  font-weight: bold;
+}
+
+.translation-detail {
+  margin-left: 1rem;
+}
+
+.translation-example {
+  margin-left: 1rem;
+  font-style: italic;
 }
 
 .category-list {
@@ -167,23 +201,46 @@ button:hover {
   text-align: left;
 }
 
-.selected-category {
-  margin-top: 2rem;
+.select-category {
+  overflow-y: auto; /* Enable vertical scrolling for the category panel */
+  max-height: 80vh; /* Limit the maximum height of the category panel */
 }
 
 .create-category-button {
-  background-color: #ccc; /* Gray background color */
-  color: #333; /* Dark text color */
+  background-color: #ccc;
+  color: #333;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.3s ease; /* Smooth transition on hover */
 }
 
 .create-category-button:hover {
-  background-color: #888; /* Darker gray background color on hover */
+  background-color: #888;
+}
+
+
+.translation-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.frword {
+  font-weight: bold;
+  min-width: 120px; /* Adjust the width as needed */
+}
+
+.translation-details {
+  flex-grow: 1;
+}
+
+.translation-detail {
+  margin-bottom: 0.5rem; /* Reduced margin between translation details */
+}
+
+.translation-example {
+  font-style: italic;
+  margin-top: 0.5rem; /* Add margin above examples */
 }
 
 </style>

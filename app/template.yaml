@@ -46,6 +46,13 @@ Resources:
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CheckTranslation.Arn}/invocations
               responses: {}
+          /api/getMoreTranslation:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetFromWord.Arn}/invocations
+              responses: {}
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
       Cors:
@@ -211,12 +218,6 @@ Resources:
       Timeout: 30
       Tracing: Active
       Events:
-        ApiPOSTcheck-translation:
-          Type: Api
-          Properties:
-            Path: /check-translation
-            Method: POST
-            RestApiId: !Ref Api
         ApiPOSTapichecktranslation:
           Type: Api
           Properties:
@@ -259,6 +260,30 @@ Resources:
             ProjectionType: ALL
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
+  GetFromWord:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: GetFromWord
+      CodeUri: solo
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Events:
+        ApiPOSTapigetMoreTranslation:
+          Type: Api
+          Properties:
+            Path: /api/getMoreTranslation
+            Method: POST
+            RestApiId: !Ref Api
+  GetFromWordLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetFromWord}
 Metadata:
   AWS::Composer::Groups:
     Group:
@@ -269,3 +294,4 @@ Metadata:
         - PostLogin
         - GetRandomWord
         - CheckTranslation
+        - GetFromWord

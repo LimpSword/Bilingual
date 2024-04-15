@@ -9,7 +9,7 @@ def hello():
 
 
 from flask import Flask, request, jsonify
-from automatic_translation import all_details
+from app.solo.automatic_translation import all_details
 
 app = Flask(__name__)
 
