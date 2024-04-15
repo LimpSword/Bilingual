@@ -58,10 +58,27 @@ async def game_loop(player1, player2):
             websockets.broadcast({player2}, f"{word}")
             await player1.send(f"{word}")
 
-            # Wait for responses with a timeout
-            player1_response = await player1.recv()
-            player2_response = await player2.recv()
+            # Wait for responses with a timeout (succeed on first response)
+            done, pending = await asyncio.wait(
+                [player1.recv(), player2.recv()],
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=15.0
+            )
 
+            # Get the responses that were received
+            player1_response = player2_response = None
+            for future in done:
+                if future.exception() is not None:
+                    print(future.exception())
+                    continue
+                response = future.result()
+                if response is not None:
+                    if future.get_coro() == player1.recv:
+                        player1_response = response
+                    else:
+                        player2_response = response
+
+            print("---", word, "---")
             # Check if both players responded with the correct word
             if player1_response == basic_french_en[word]:
                 result = 'success'
@@ -76,7 +93,12 @@ async def game_loop(player1, player2):
                 result = 'failure'
             await player2.send(f"/result {result}")
             print("Player 2 response", player2_response, result)
+            print("------")
 
+            # Cancel recv
+            for task in pending:
+                task.cancel()
+            await asyncio.sleep(1)
         await asyncio.gather(
             player1.send('/end'),
             player2.send('/end')

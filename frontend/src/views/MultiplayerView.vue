@@ -54,7 +54,6 @@ import {nextTick, ref} from "vue";
 let isInQueue = false
 let ws
 
-
 const visible = ref(false);
 
 function sendTranslation() {
@@ -78,7 +77,7 @@ function joinQueue() {
       // wait for "hello"
       ws.onmessage = (event) => {
         const message = event.data
-        if (message === "/hello") {
+        if (message.startsWith("/hello")) {
           document.getElementById("remove-when-game").classList.add("hidden")
           document.getElementById("add-when-game").classList.remove("hidden")
 
