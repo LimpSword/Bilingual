@@ -256,7 +256,7 @@ export default {
         localStorage.setItem('username', json.username)
         localStorage.setItem('email', json.email)
         // redirect to the dashboard
-        this.$router.push('/profile')
+        location.href = '/'
       }).catch(error => {
         switch (error.code) {
           case "ERR_NETWORK":
