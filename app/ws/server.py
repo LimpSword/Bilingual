@@ -1,11 +1,14 @@
 import asyncio
+import json
 import random
 
+import requests
 import websockets
 
 # List to store connected players
 players = []
 players_name = {}
+players_email = {}
 
 basic_french_en = {
     "réunion": "meeting",
@@ -32,6 +35,7 @@ async def match_players(websocket):
     async for msg in websocket:
         if msg.startswith("/name"):
             players_name[websocket] = msg.split(" ")[1]
+            players_email[websocket] = msg.split(" ")[2]
             break
     print(players_name)
     if len(players) >= 1:
@@ -123,6 +127,32 @@ async def game_loop(player1, player2):
 
         has_player1_won = "win" if response_count[player1] > response_count[player2] else "lose"
         has_player2_won = "win" if response_count[player2] > response_count[player1] else "lose"
+
+        if has_player1_won == "win":
+            url = "https://8jrcgpn602.execute-api.eu-west-3.amazonaws.com/Prod/api/updateElo"
+            payload = {
+                "email": players_email[player1],
+                "elo": 10
+            }
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            print(payload)
+            response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+            print(response.text)
+        elif has_player2_won == "win":
+            url = "https://8jrcgpn602.execute-api.eu-west-3.amazonaws.com/Prod/api/updateElo"
+            payload = {
+                "email": players_email[player2],
+                "elo": 10
+            }
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            print(payload)
+            response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+            print(response.text)
+
 
         await asyncio.gather(
             player1.send('/end ' + has_player1_won),

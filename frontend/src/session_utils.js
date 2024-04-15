@@ -9,3 +9,7 @@ export function signOut() {
 export function getUserName() {
     return localStorage.getItem('username');
 }
+
+export function getUserEmail() {
+    return localStorage.getItem('email');
+}

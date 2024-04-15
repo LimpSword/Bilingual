@@ -80,9 +80,9 @@ function joinQueue() {
     ws.onopen = () => {
       console.log('Connected to the WebSocket server')
       if (isUserLoggedIn()) {
-        ws.send("/name " + localStorage.getItem("username"))
+        ws.send("/name " + localStorage.getItem("username") + " " + localStorage.getItem("email"))
       } else {
-        ws.send("/name anonymous")
+        ws.send("/name anonymous email")
       }
       // wait for "hello"
       ws.onmessage = (event) => {
