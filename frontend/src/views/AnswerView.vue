@@ -6,7 +6,7 @@
           <h2>{{ term }}</h2>
         </div>
         <div class="panel-body">
-          <input v-model="translation" type="text" placeholder="Type the translation" />
+          <input v-model="translation" type="text" placeholder="Type the translation"/>
           <transition name="fade">
             <div v-if="showErrorMessage" class="error-message">{{ errorMessage }}</div>
           </transition>
@@ -46,9 +46,9 @@ function levenshteinDistance(str1, str2) {
     for (let j = 1; j <= n; j++) {
       const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
       dp[i][j] = Math.min(
-        dp[i - 1][j] + 1, // Deletion
-        dp[i][j - 1] + 1, // Insertion
-        dp[i - 1][j - 1] + cost // Substitution
+          dp[i - 1][j] + 1, // Deletion
+          dp[i][j - 1] + 1, // Insertion
+          dp[i - 1][j - 1] + cost // Substitution
       );
     }
   }
@@ -68,22 +68,38 @@ export default {
       showCorrectButton: false,
       showSkipButton: false,
       showCorrectMessage: false,
-      errorMessage: "Incorrect translation. Please try again."
+      errorMessage: "Incorrect translation. Please try again.",
+      selectedCategory: ""
     };
   },
-  async created() {
+  async mounted() {
+    // Access the category parameter from the route
+    this.selectedCategory = this.$route.params.category;
+    console.log('Category:', this.selectedCategory);
+    // Now you can use the category parameter in your component logic
     await this.getRandomWord();
   },
+  // async created() {
+  //   await this.getRandomWord();
+  // },
   methods: {
     async getRandomWord() {
-      const response = await axios.get(import.meta.env.VITE_API_URL + '/random-word');
-      this.term = response.data.english;
+      console.log('random for category', this.selectedCategory)
+      try {
+        const response = await axios.post(import.meta.env.VITE_API_URL + '/random-word', {category: this.selectedCategory});
+        console.log('response', response);
+        this.term = response.data.english;
+      } catch (error) {
+        console.error('Error fetching random word:', error);
+      }
     },
     async checkTranslation() {
+      console.log('Checking translation', this.term, this.translation)
       const response = await axios.post(import.meta.env.VITE_API_URL + '/check-translation', {
         english: this.term,
         french: this.translation
       });
+      console.log('Response:', response);
       if (response.data.correct) {
         this.showCorrectMessage = true;
         setTimeout(() => {
@@ -91,7 +107,7 @@ export default {
           this.nextWord();
         }, 2000); // Hide correct message after 2 seconds
       } else {
-        if (levenshteinDistance(response.data.correctTranslation, this.translation) <= 2 || this.term.toLowerCase() === this.translation.toLowerCase()){
+        if (levenshteinDistance(response.data.correctTranslation, this.translation) <= 2 || this.term.toLowerCase() === this.translation.toLowerCase()) {
           this.errorMessage = "Incorrect translation. Did you mean " + response.data.correctTranslation + "?";
           this.showErrorMessage = true;
           this.showCorrectButton = true;
@@ -131,9 +147,11 @@ export default {
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.5s;
 }
+
 .fade-enter, .fade-leave-to {
   opacity: 0;
 }
+
 .correct-message {
   color: green;
   margin-top: 1rem;

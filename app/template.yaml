@@ -33,7 +33,7 @@ Resources:
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Leaderboard.Arn}/invocations
               responses: {}
           /api/random-word:
-            get:
+            post:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
@@ -202,15 +202,21 @@ Resources:
       Environment:
         Variables:
           TRANSLATIONS_TABLE_NAME: !Ref TranslationsTable
+          CATEGORIESWORDS_TABLE_NAME: !Ref CategoriesWords
+          CATEGORIESWORDS_TABLE_ARN: !GetAtt CategoriesWords.Arn
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TranslationsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CategoriesWords
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TranslationsTable
       Events:
-        ApiGETapirandomword:
+        ApiPOSTapirandomword:
           Type: Api
           Properties:
             Path: /api/random-word
-            Method: GET
+            Method: POST
             RestApiId: !Ref Api
     Metadata:
       SamResourceId: GetRandomWord
@@ -388,9 +394,13 @@ Resources:
         Variables:
           CATEGORIESWORDS_TABLE_NAME: !Ref CategoriesWords
           CATEGORIESWORDS_TABLE_ARN: !GetAtt CategoriesWords.Arn
+          TRANSLATIONS_TABLE_NAME: !Ref TranslationsTable
+          TRANSLATIONS_TABLE_NAME_ARN: !GetAtt TranslationsTable.Arn
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref CategoriesWords
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TranslationsTable
       Events:
         ApiPOSTapigetcategorywords:
           Type: Api

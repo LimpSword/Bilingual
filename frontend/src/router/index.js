@@ -30,8 +30,9 @@ const router = createRouter({
             component: () => import('../views/LeaderboardView.vue')
         },
         {
-            path: '/play',
+            path: '/play/:category',
             name: 'play',
+            props: true,
             component: () => import('../views/AnswerView.vue')
         },
         {

@@ -20,13 +20,16 @@
             <div class="translation-row">
               <div class="frword">{{ translation.frword }}</div>
               <div class="translation-details">
-                <div v-for="(translationDetail, detailIndex) in translation.toword" :key="detailIndex" class="translation-detail">
+                <div v-for="(translationDetail, detailIndex) in translation.toword" :key="detailIndex"
+                     class="translation-detail">
                   {{ translationDetail }}
                 </div>
                 <div v-if="translation.frex || translation.toex" class="translation-example">
                   <b>Example:</b> {{ translation.frex }} <br> {{ translation.toex }}
                 </div>
               </div>
+              <!-- Change the button text to "Add to Category" -->
+              <button class="add-to-category-button" @click="addToCategory(translation.frword)">Add to Category</button>
             </div>
           </div>
         </div>
@@ -41,14 +44,31 @@
           <button class="create-category-button" @click="goToNewCategoryPage">New Category</button>
         </div>
         <div class="selected-category" v-if="selectedCategory">
-          <h3>Selected Category: {{ selectedCategory.categoryName }}</h3>
+          <h3 class="selected-category-title">Selected Category: {{ selectedCategory.categoryName }}</h3>
           <!-- Display words for selected category -->
           <div class="word-list">
-            <div v-for="word in selectedCategory.words" :key="word.id" @click="handleWordClick(word)">
-              {{ word.label }}: {{ word.text }}
-            </div>
+            <table class="word-table">
+              <thead>
+              <tr>
+                <th>Word</th>
+                <th>Translations</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="word in selectedCategory.words" :key="word.word">
+                <td>{{ word.word }}</td>
+                <td>{{ word.translations }}</td>
+
+              </tr>
+              </tbody>
+            </table>
+            <!-- Play button that is only displayed when a category is selected -->
+            <br>
+            <button v-if="selectCategory" @click="playSelectedCategory">Play on selected category</button>
           </div>
         </div>
+        <button class="play-all-button" @click="playAllWords">Play on all words</button>
+
       </div>
     </div>
   </div>
@@ -70,7 +90,7 @@ export default {
     };
 
   },
-    created() {
+  created() {
     // Fetch categories from the server when the component is created
     this.fetchCategories();
   },
@@ -80,7 +100,11 @@ export default {
       const destinationLanguage = this.selectedLanguage.toLowerCase(); // Use the selected destination language
 
       // Make a GET request to your Flask server with the word, origin language, and destination language as parameters
-      axios.post( 'http://127.0.0.1:5000/moreTrad',  {'word' : this.wordToTranslate, 'origin_language' : originLanguage ,'destination_language' : destinationLanguage})
+      axios.post('http://127.0.0.1:5000/moreTrad', {
+        'word': this.wordToTranslate,
+        'origin_language': originLanguage,
+        'destination_language': destinationLanguage
+      })
           .then(response => {
             // Update component data with the response from the server
             console.log(response.data)
@@ -92,24 +116,47 @@ export default {
     },
     fetchCategories() {
       axios.get(import.meta.env.VITE_API_URL + '/get-categories')
-        .then(response => {
-          console.log(response)
-          this.categories = response.data;
-        })
-        .catch(error => {
-          console.error('Error fetching categories:', error);
-        });
+          .then(response => {
+            console.log(response)
+            this.categories = response.data;
+          })
+          .catch(error => {
+            console.error('Error fetching categories:', error);
+          });
     },
     selectCategory(category) {
-      axios.post( import.meta.env.VITE_API_URL + '/get-categories',  {'category' : category})
-      this.selectedCategory = category;
+      axios.post(import.meta.env.VITE_API_URL + '/get-category-words', {'category': category})
+          .then(response => {
+            console.log(response)
+            this.selectedCategory = response.data;
+          })
+          .catch(error => {
+            console.error('Error fetching category words:', error);
+          });
     },
     goToNewCategoryPage() {
       this.$router.push('/new-category');
     },
+    // Function to add a word to a category
+    addToCategory(word) {
+      // Implement your logic to add the word to the selected category
+      console.log('Adding word to category:', word);
+    },
+    playSelectedCategory() {
+      if (this.selectedCategory) {
+        console.log("play selected category")
+        console.log(this.selectedCategory.category);
+        this.$router.push({name: 'play', params: {category: this.selectedCategory.category}});
+      }
+    },
+    playAllWords() {
+      console.log("play all words");
+      this.$router.push({name: 'play', params: {category: 'all'}});
+    }
   },
 };
 </script>
+
 
 <style scoped>
 #app {
@@ -257,4 +304,78 @@ button:hover {
   margin-top: 0.5rem; /* Add margin above examples */
 }
 
+.selected-category {
+  margin-top: 20px;
+}
+
+.selected-category-title {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.selected-category {
+  margin-top: 20px;
+}
+
+.selected-category-title {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.selected-category {
+  margin-top: 20px;
+}
+
+.selected-category-title {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.word-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.word-table th, .word-table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.word-table th {
+  background-color: #f2f2f2;
+}
+
+.word-table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.word-table tbody tr:hover {
+  background-color: #ddd;
+}
+
+
+.play-all-button, .add-to-category-button {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem; /* Adjust padding for both buttons */
+  cursor: pointer;
+  margin-top: 1rem; /* Add margin top for spacing */
+  margin-right: 1rem; /* Add margin right for spacing */
+}
+
+.play-all-button:hover, .add-to-category-button:hover {
+  background-color: #4245eb;
+}
+
+/* Smaller button size for translations */
+.translation-item .add-to-category-button {
+  padding: 0.3rem 0.6rem; /* Adjust padding for smaller size */
+}
 </style>
