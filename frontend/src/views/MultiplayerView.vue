@@ -33,6 +33,8 @@
   <div id="add-when-game" class="hidden">
     <div class="flex justify-center items-center min-h-[calc(50vh)]">
       <div class="bg-gray-50 rounded-lg shadow-lg p-8 min-w-[calc(50%)] mx-auto bg-opacity-60">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4 hidden" id="start-timer"></h1>
+        <ConfettiExplosion v-if="visible"/>
         <h1 id="to-translate" class="text-2xl font-bold text-gray-800 mb-4">Word to translate:</h1>
         <h2 class="text-lg font-semibold text-gray-700 mb-2">Translation</h2>
         <input type="text" placeholder="Your translation" id="translation"
@@ -46,11 +48,14 @@
   </div>
 </template>
 <script setup>
-import Router from "@/router/index.js";
-import {useRouter} from "vue-router";
+import ConfettiExplosion from "vue-confetti-explosion";
+import {nextTick, ref} from "vue";
 
 let isInQueue = false
 let ws
+
+
+const visible = ref(false);
 
 function sendTranslation() {
   const translation = document.getElementById("translation").value
@@ -76,6 +81,18 @@ function joinQueue() {
         if (message === "/hello") {
           document.getElementById("remove-when-game").classList.add("hidden")
           document.getElementById("add-when-game").classList.remove("hidden")
+
+          // start the timer
+          let time = 3
+          document.getElementById("start-timer").classList.remove("hidden")
+          const timer = setInterval(() => {
+            document.getElementById("start-timer").innerText = "Game starting in " + time + " seconds"
+            time--
+            if (time < 0) {
+              clearInterval(timer)
+              document.getElementById("start-timer").classList.add("hidden")
+            }
+          }, 1000)
         } else {
           if (message === "/end") {
             // finished
@@ -86,11 +103,23 @@ function joinQueue() {
             // if message starts with result then it is the result of the translation
             if (message.startsWith("/result")) {
               const result = message.split(" ")[1]
+              document.getElementById("start-timer").classList.remove("hidden")
               if (result === "success") {
-                alert("Correct!")
+                document.getElementById("start-timer").innerText = "You are correct! 🎉"
+
+                async function confetti() {
+                  visible.value = false;
+                  await nextTick();
+                  visible.value = true;
+                }
+
+                confetti()
               } else {
-                alert("Incorrect!")
+                document.getElementById("start-timer").innerText = "You are wrong 😢"
               }
+              setTimeout(() => {
+                document.getElementById("start-timer").classList.add("hidden")
+              }, 5000)
             } else {
               // update the word to translate
               document.getElementById("to-translate").innerText = "Word to translate: " + message

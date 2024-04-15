@@ -6,10 +6,19 @@ import websockets
 # List to store connected players
 players = []
 
+basic_french_en = {
+    "réunion": "meeting",
+    "entretien": "interview",
+    "lettre de motivation": "cover letter"
+}
+
 
 # Function to generate a random word
-def generate_word():
-    return ''.join(random.choices(string.ascii_lowercase, k=5))
+def generate_word(avoid: list):
+    choice = random.choice(list(basic_french_en.keys()))
+    while choice in avoid:
+        choice = random.choice(list(basic_french_en.keys()))
+    return choice
 
 
 # Function to match players and start the game loop
@@ -38,11 +47,14 @@ async def game_loop(player1, player2):
         await asyncio.gather(
             player1.send("/hello"),
             player2.send("/hello"),
-            asyncio.sleep(3)
+            asyncio.sleep(4)
         )
 
+        used_words = []
+
         for n in range(5):
-            word = generate_word()
+            word = generate_word(used_words)
+            used_words.append(word)
             websockets.broadcast({player2}, f"{word}")
             await player1.send(f"{word}")
 
@@ -51,14 +63,14 @@ async def game_loop(player1, player2):
             player2_response = await player2.recv()
 
             # Check if both players responded with the correct word
-            if player1_response == word:
+            if player1_response == basic_french_en[word]:
                 result = 'success'
             else:
                 result = 'failure'
             await player1.send(f"/result {result}")
             print("Player 1 response", player1_response, result)
 
-            if player2_response == word:
+            if player2_response == basic_french_en[word]:
                 result = 'success'
             else:
                 result = 'failure'
