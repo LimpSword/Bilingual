@@ -5,3 +5,7 @@ export function isUserLoggedIn() {
 export function signOut() {
     localStorage.removeItem('token');
 }
+
+export function getUserName() {
+    return localStorage.getItem('username');
+}

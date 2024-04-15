@@ -251,7 +251,10 @@ export default {
         password: this.password
       }).then(response => {
         // store the token in local storage
-        localStorage.setItem('token', response.data.token)
+        let json = response.data
+        localStorage.setItem('token', json.session_id)
+        localStorage.setItem('username', json.username)
+        localStorage.setItem('email', json.email)
         // redirect to the dashboard
         this.$router.push('/profile')
       }).catch(error => {

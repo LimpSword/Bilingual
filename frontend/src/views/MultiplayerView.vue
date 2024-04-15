@@ -33,7 +33,9 @@
   <div id="add-when-game" class="hidden">
     <div class="flex justify-center items-center min-h-[calc(50vh)]">
       <div class="bg-gray-50 rounded-lg shadow-lg p-8 min-w-[calc(50%)] mx-auto bg-opacity-60">
+        <h1 class="text-5xl font-bold text-yellow-500 mb-4 hidden" id="result"></h1>
         <h1 class="text-3xl font-bold text-gray-800 mb-4 hidden" id="start-timer"></h1>
+        <h1 class="text-2xl font-bold text-gray-700 mb-4 hidden" id="opponent"></h1>
         <ConfettiExplosion v-if="visible"/>
         <h1 id="to-translate" class="text-2xl font-bold text-gray-800 mb-4">Word to translate:</h1>
         <h2 class="text-lg font-semibold text-gray-700 mb-2">Translation</h2>
@@ -50,9 +52,12 @@
 <script setup>
 import ConfettiExplosion from "vue-confetti-explosion";
 import {nextTick, ref} from "vue";
+import {isUserLoggedIn} from "@/session_utils.js";
 
 let isInQueue = false
 let ws
+
+let round = 0
 
 const visible = ref(false);
 
@@ -74,12 +79,21 @@ function joinQueue() {
     ws = new WebSocket(import.meta.env.VITE_WS_URL)
     ws.onopen = () => {
       console.log('Connected to the WebSocket server')
+      if (isUserLoggedIn()) {
+        ws.send("/name " + localStorage.getItem("username"))
+      } else {
+        ws.send("/name anonymous")
+      }
       // wait for "hello"
       ws.onmessage = (event) => {
         const message = event.data
         if (message.startsWith("/hello")) {
           document.getElementById("remove-when-game").classList.add("hidden")
           document.getElementById("add-when-game").classList.remove("hidden")
+
+          let opponent = message.split(" ")[1]
+          document.getElementById("opponent").innerText = "You are playing against " + opponent
+          document.getElementById("opponent").classList.remove("hidden")
 
           // start the timer
           let time = 3
@@ -93,18 +107,35 @@ function joinQueue() {
             }
           }, 1000)
         } else {
-          if (message === "/end") {
+          if (message.startsWith("/end")) {
             // finished
             ws.close()
-            document.getElementById("remove-when-game").classList.remove("hidden")
-            document.getElementById("add-when-game").classList.add("hidden")
+
+            // has won?
+            const result = message.split(" ")[1]
+            if (result === "win") {
+              document.getElementById("result").innerText = "You have won the game! 🎉"
+              document.getElementById("result").classList.remove("hidden")
+            } else {
+              document.getElementById("result").innerText = "You have lost the game 😢"
+              document.getElementById("result").classList.remove("hidden")
+            }
+
+            // Wait 10s
+            setTimeout(() => {
+              document.getElementById("remove-when-game").classList.remove("hidden")
+              document.getElementById("add-when-game").classList.add("hidden")
+
+              // Refresh the page
+              location.reload()
+            }, 10000)
           } else {
             // if message starts with result then it is the result of the translation
             if (message.startsWith("/result")) {
               const result = message.split(" ")[1]
               document.getElementById("start-timer").classList.remove("hidden")
               if (result === "success") {
-                document.getElementById("start-timer").innerText = "You are correct! 🎉"
+                document.getElementById("start-timer").innerText = "You are correct! Round won! 🎉"
 
                 async function confetti() {
                   visible.value = false;
@@ -114,14 +145,15 @@ function joinQueue() {
 
                 confetti()
               } else {
-                document.getElementById("start-timer").innerText = "You are wrong 😢"
+                document.getElementById("start-timer").innerText = "You lost the round 😢"
               }
               setTimeout(() => {
                 document.getElementById("start-timer").classList.add("hidden")
               }, 5000)
             } else {
+              round++
               // update the word to translate
-              document.getElementById("to-translate").innerText = "Word to translate: " + message
+              document.getElementById("to-translate").innerText = "Word to translate (" + round + "/5): " + message
 
               // wait 4.9s
               setTimeout(() => {
